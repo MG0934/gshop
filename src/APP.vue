@@ -7,7 +7,7 @@
 
 <script>
 import FooterGuide from "./components/FooterGuide/FooterGuide";
-
+import {mapActions} from 'vuex'
 export default {
   components: {
     FooterGuide
@@ -18,9 +18,14 @@ export default {
   },
   watch: {},
   computed: {},
-  methods: {},
+  methods: {
+    ...mapActions(['getAddress'])
+  },
   created() {},
-  mounted() {}
+  mounted() {
+    //this.$store.dispatch('getAddress')
+    this.getAddress();
+  }
 };
 </script>
 <style lang="stylus" rel="stylesheet/stylus">
