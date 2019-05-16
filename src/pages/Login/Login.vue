@@ -32,7 +32,7 @@
             <div :class="{on:!checkLoginType}">
               <section>
                 <section class="login_message">
-                  <input type="tel" maxlength="11" placeholder="手机/邮箱/用户名">
+                  <input type="tel" maxlength="11" placeholder="手机/邮箱/用户名" v-model="name">
                 </section>
                 <section class="login_verification">
                   <input type="text" maxlength="8" placeholder="密码" v-if="showPwd" v-model="pwd">
@@ -43,8 +43,8 @@
                   </div>
                 </section>
                 <section class="login_message">
-                  <input type="text" maxlength="11" placeholder="验证码">
-                  <img class="get_verification" src="./images/captcha.svg" alt="captcha">
+                  <input type="text" maxlength="11" placeholder="验证码" v-model="captcha">
+                  <img class="get_verification" :src="newCaptcha" alt="captcha" @click="getCaptcha">
                 </section>
               </section>
             </div>
@@ -56,43 +56,128 @@
           <i class="iconfont icon-jiantou2" @click="$router.back()"></i>
         </a>
       </div>
+      <AlertTip :alertText="alertText" v-show="alertStatus" @closeTip="enterAlert"></AlertTip>
     </section>
   </div>
 </template>
 
 <script>
+import AlertTip from "../../components/AlertTip/AlertTip";
+import { reqSendCode, reqSmsLogin, reqPwdLogin } from "../../api";
+
 export default {
   data() {
     return {
       checkLoginType: true,
       phone: "",
       code: "",
-      pwd:"",
+      name: "",
+      pwd: "",
+      captcha: "",
       computeTime: 0,
-      showPwd:false
+      showPwd: false,
+      alertStatus: false,
+      alertText: "",
+      newCaptcha: "http://localhost:4000/captcha"
     };
   },
-  components: {},
+  components: {
+    AlertTip
+  },
   computed: {
     rightPhone() {
       return /^1\d{10}$/.test(this.phone);
     }
   },
   methods: {
-    getCode() {
-      if (this.computeTime ===0) {
+    async getCode() {
+      if (this.computeTime === 0) {
+        //获取验证码
         this.computeTime = 60;
-        let intervalId = setInterval(() => {
+        this.intervalId = setInterval(() => {
           if (this.computeTime > 0) {
             this.computeTime--;
           } else {
-            clearInterval(intervalId);
+            clearInterval(this.intervalId);
           }
         }, 1000);
+
+        const result = await reqSendCode(this.phone);
+        if (result.code == 1) {
+          this.showAlert("result.msg");
+          if (this.computeTime > 0) {
+            clearInterval(this.intervalId);
+            this.computeTime = 0;
+            this.intervalId = undefined;
+          }
+        }
       }
     },
-    login(){
-      alert(1)
+    async login() {
+      let result;
+      if (this.checkLoginType) {
+        //短信登录
+        const { rightPhone, phone, code } = this;
+        if (!this.rightPhone) {
+          //手机号错误
+          this.showAlert("手机号错误");
+          return;
+        } else if (!/^\d{6}$/.test(code)) {
+          //验证码错误
+          this.showAlert("验证码错误");
+          return;
+        }
+
+        result = await reqSmsLogin(this.phone, this.code);
+      } else {
+        //密码登录
+        const { name, pwd, captcha } = this;
+
+        if (!this.name) {
+          //手机号错误
+          this.showAlert("手机号错误");
+          return;
+        } else if (!this.pwd) {
+          //密码错误
+          this.showAlert("密码错误");
+          return;
+        } else if (!this.captcha) {
+          //验证码错误
+          this.showAlert("验证码错误");
+          return;
+        }
+
+        result = await reqPwdLogin({ name, pwd, captcha });
+      }
+
+      if (this.computeTime > 0) {
+        clearInterval(this.intervalId);
+        this.computeTime = 0;
+        this.intervalId = undefined;
+      }
+
+      if (result.code === 0) {
+        const user = result.data;
+        //将user保存到state中
+        this.$store.dispatch('addUserInfo',user)
+        //跳转个人中心界面
+        this.$router.replace('/profile')
+      } else {
+        const msg = result.msg;
+        this.showAlert(msg);
+        this.getCaptcha();
+      }
+    },
+    showAlert(text) {
+      this.alertStatus = true;
+      this.alertText = text;
+    },
+    enterAlert() {
+      this.alertStatus = false;
+      this.alertText = "";
+    },
+    getCaptcha() {
+      this.newCaptcha = "http://localhost:4000/captcha?time=" + Date.now();
     }
   }
 };
@@ -240,8 +325,9 @@ export default {
                 background: #fff;
                 box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
                 transition: transform 0.3s;
-                &.right{
-                  transform translateX(28px)
+
+                &.right {
+                  transform: translateX(28px);
                 }
               }
             }

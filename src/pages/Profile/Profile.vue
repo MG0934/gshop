@@ -3,17 +3,17 @@
     <section class="profile">
       <HeaderTop title="我的"></HeaderTop>
       <section class="profile-number">
-        <router-link to="/login" class="profile-link">
+        <router-link :to="userInfo._id?'/userInfo':'/login'" class="profile-link">
           <div class="profile_image">
             <i class="iconfont icon-person"></i>
           </div>
           <div class="user-info">
-            <p class="user-info-top">登录/注册</p>
+            <p class="user-info-top">{{userInfo.name || userInfo._id || "注册|登录"}}</p>
             <p>
               <span class="user-icon">
                 <i class="iconfont icon-shouji icon-mobile"></i>
               </span>
-              <span class="icon-mobile-number">暂无绑定手机号</span>
+              <span class="icon-mobile-number">{{userInfo.phone || '暂无绑定手机号'}}</span>
             </p>
           </div>
           <span class="arrow">
@@ -96,11 +96,16 @@
         </a>
       </section>
     </section>
+    <section class="profile_my_order border-1px">
+      <mt-button type="danger" style="width:100%" @click="loginOut" v-if="userInfo._id">退出登录</mt-button>
+    </section>
   </div>
 </template>
 
 <script>
 import HeaderTop from "../../components/HeaderTop/HeaderTop";
+import { mapState } from "vuex";
+import { MessageBox } from "mint-ui";
 export default {
   components: {
     HeaderTop
@@ -110,8 +115,18 @@ export default {
     return {};
   },
   watch: {},
-  computed: {},
-  methods: {},
+  computed: {
+    ...mapState(["userInfo"])
+  },
+  methods: {
+    loginOut() {
+      MessageBox.confirm("确定要进行退出吗?").then(action => {
+          this.$store.dispatch('loginOut')
+      },action=>{
+          console.log('点击了取消')
+      });
+    }
+  },
   created() {},
   mounted() {}
 };
@@ -121,7 +136,8 @@ export default {
 
 .profile { // 我的
   width: 100%;
-  overflow hidden;
+  overflow: hidden;
+
   .profile-number {
     margin-top: 45.5px;
 
