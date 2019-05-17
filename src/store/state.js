@@ -7,5 +7,7 @@ export default{
     userInfo:{},
     shopInfo:{},
     shopGoods:{},
-    shopRatings:{}
+    shopRatings:{},
+    cartFoods:[],
+    info:{}
 }

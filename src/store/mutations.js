@@ -3,8 +3,12 @@ import {
     RESET_USER_INFO,
     RECEIVE_SHOP_GOODS,
     RECEIVE_SHOP_INFO,
-    RECEIVE_SHOP_RATINGS
+    RECEIVE_SHOP_RATINGS,
+    INCREMENT_FOOD_COUNT,
+    DECREMENT_FOOD_COUNT,CLEAR_FOODS
 } from './mutation-types'
+
+import Vue from 'vue'
 
 export default {
     [RECEIVE_ADDRESS](state, { address }) {
@@ -30,5 +34,27 @@ export default {
     },
     [RECEIVE_SHOP_RATINGS](state, { shopRatings }) {
         state.shopRatings = shopRatings;
+    },
+    [INCREMENT_FOOD_COUNT](state, { food }) {
+        if(!food.count){
+            Vue.set(food,'count',1);
+            state.cartFoods.push(food)
+        }else{
+            food.count++;
+        }
+    },
+    [DECREMENT_FOOD_COUNT](state, { food }) {
+        if(food.count){
+            food.count--;
+            if(food.count===0){
+                state.cartFoods.splice(state.cartFoods.indexOf(food),1)
+            }
+        }
+    },
+    [CLEAR_FOODS](state){
+        state.cartFoods.forEach(element => {
+            element.count=0;
+        });
+        state.cartFoods=[];
     }
 }

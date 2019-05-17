@@ -3,31 +3,33 @@
     <ShopHeader></ShopHeader>
     <div class="tab">
       <div class="tab-item">
-        <router-link to="/shop/goods">点餐</router-link>
+        <router-link to="/shop/goods" replace>点餐</router-link>
       </div>
       <div class="tab-item">
-        <router-link to="/shop/ratings">评价</router-link>
+        <router-link to="/shop/ratings" replace>评价</router-link>
       </div>
       <div class="tab-item">
-        <router-link to="/shop/info">信息</router-link>
+        <router-link to="/shop/info" replace>信息</router-link>
       </div>
     </div>
     <router-view></router-view>
+    <ShopCart></ShopCart>
   </div>
 </template>
 
 <script>
 import ShopHeader from "../../components/ShopHeader/ShopHeader";
-
+import ShopCart from "../../components/ShopCart/ShopCart";
 export default {
   data() {
     return {};
   },
   components: {
-    ShopHeader
+    ShopHeader,
+    ShopCart
   },
-  mounted(){
-    this.$store.dispatch('getShopInfo')
+  mounted() {
+    this.$store.dispatch("getShopInfo");
   }
 };
 </script>

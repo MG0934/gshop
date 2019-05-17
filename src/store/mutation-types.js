@@ -13,3 +13,9 @@ export const RECEIVE_SHOP_INFO='receive_shop_info' //接收商家
 export const RECEIVE_SHOP_GOODS='receive_shop_goods' //接收商家
 
 export const RECEIVE_SHOP_RATINGS='receive_shop_ratings' //接收商家
+
+export const INCREMENT_FOOD_COUNT = 'increment_food_count'
+
+export const DECREMENT_FOOD_COUNT = 'decrement_food_count'
+
+export const CLEAR_FOODS = 'clear_foods'
